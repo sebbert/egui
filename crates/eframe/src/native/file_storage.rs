@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    io::Write,
     path::{Path, PathBuf},
 };
 
@@ -82,8 +83,10 @@ impl crate::Storage for FileStorage {
 
             let join_handle = std::thread::spawn(move || {
                 let file = std::fs::File::create(&file_path).unwrap();
+                let mut writer = std::io::BufWriter::new(file);
                 let config = Default::default();
-                ron::ser::to_writer_pretty(file, &kv, config).unwrap();
+                ron::ser::to_writer_pretty(&mut writer, &kv, config).unwrap();
+                writer.flush().unwrap();
                 log::trace!("Persisted to {:?}", file_path);
             });
 
